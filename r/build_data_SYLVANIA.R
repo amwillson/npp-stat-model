@@ -5,6 +5,7 @@ library(dplR)
 library(fields)
 library(reshape2)
 library(plyr)
+rm(list = ls())
 
 ## Before running this script, download data from the Wiki for your site
 ## Then, add these data to the "data" folder in npp-stat-model under a folder for your site
