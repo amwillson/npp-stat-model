@@ -26,7 +26,7 @@ dat = readRDS(paste0('sites/', site, '/data/', fname_data, '.RDS'))
 # This will be in your environment as "out"
 # This file is a matrix of parameter estimates from another site in the PalEON network
 # We are only interested in extracting the DBH measurement error (sigma d obs) parameter estimates from the matrix
-load(paste0('ring_model_t_pdbh_HMC_NOCOVAR_v3.0.Rdata'))
+load(paste0('/Users/Aly/Google Drive 2/McLachlan/SU20/ring_model_t_pdbh_HMC_NOCOVAR_v3.0.Rdata'))
 
 # Make a list of column names from the model output loaded above (these correspond to the paramter estimated in that column)
 col_names = sapply(strsplit(colnames(out), '\\['), function(x) x[[1]])
@@ -53,8 +53,7 @@ fit <- sampling(compiled,
                 data = dat, 
                 iter = 5000, 
                 chains = 1,
-                verbose=TRUE,
-                control = list(adapt_delta = 0.99))
+                verbose=TRUE)
 rm(compiled)
 
 # Extract samples
