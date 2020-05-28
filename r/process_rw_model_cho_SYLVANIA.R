@@ -29,13 +29,13 @@ library(dplyr)
 ########################################
 
 # date for save purposes
-date = '2Dec2019' 
+date = '27May2020' 
 
 # set up output 
 site <- 'SYLVANIA'
 
 # data version
-dvers = 'v5.0'
+dvers = 'v0.1'
 #mvers = 'v4.0'
 
 # burn-in range
@@ -53,7 +53,7 @@ models = c('Model RW')
 run_ringwidth = TRUE
 
 # the year ring widths were collected (this year and next years are removed)
-rw_year = 2013
+rw_year = 2018
 
 ########################################
 
@@ -97,6 +97,7 @@ trees = seq(1, N_trees)
 
 # match species acronyms to level3a available species/pfts 
 acro_level3a = read.csv('data/acronym_to_level3a_v0.1.csv', stringsAsFactors = FALSE)
+acro_level3a[17,] = c('THOC', 'Cedar/juniper')
 acro_level3a = left_join(taxaMatch, acro_level3a, by = c('species'='acronym'))
 choj = read.csv('data/level3a_to_chojnacky_v0.4.csv', stringsAsFactors = FALSE)
 choj = left_join(acro_level3a, choj, id = 'level3a') 
@@ -308,11 +309,11 @@ idx_large  = which(pdbh>=30)
 
 # in Kg/plot, rescale so it is Mg/ha
 # but plot sizes differ depending on tree size due to sampling design
-# ab_pr1 = ab_p_1
-# ab_pr1[idx_small,,] = ab_p_1[idx_small,,]/(13^2*pi) * 10
-# ab_pr1[idx_medium,,] = ab_p_1[idx_medium,,]/(20^2*pi) * 10
-# ab_pr1[idx_large,,] = ab_p_1[idx_large,,]/(30^2*pi) * 10
-ab_pr1 = ab_p_1/(30^2*pi) * 10
+ab_pr1 = ab_p_1
+ab_pr1[idx_small,,] = ab_p_1[idx_small,,]/(13^2*pi) * 10
+ab_pr1[idx_medium,,] = ab_p_1[idx_medium,,]/(20^2*pi) * 10
+ab_pr1[idx_large,,] = ab_p_1[idx_large,,]/(30^2*pi) * 10
+# ab_pr1 = ab_p_1/(30^2*pi) * 10
 
 # melt predicted biomass for both models
 ab_p1_melt = melt(ab_pr1)
@@ -376,7 +377,7 @@ for (i in 1:N_trees) {
   print(i)
   tree = trees[i]
   tree_idx = which(trees == tree)
-  pft  = as.vector(taxaMatch[which(taxaMatch$taxon == taxon[tree]),'species'])
+  pft  = as.vector(taxaMatch[which(taxaMatch$number == taxon[tree]),'species'])
   
   dbh_year = pdbh_year[i]
   dbh_tree = exp(logPDobs[tree])
@@ -441,11 +442,11 @@ dbh_m_melt$plot = plot_id[dbh_m_melt$tree]
 
 # in Kg/plot, rescale so it is Mg/ha
 # ab_mr = ab_m/(20^2*pi) * 10
-# ab_mr = ab_m
-# ab_mr[idx_small,] = ab_m[idx_small,]/(13^2*pi) * 10
-# ab_mr[idx_medium,] = ab_m[idx_medium,]/(20^2*pi) * 10
-# ab_mr[idx_large,] = ab_m[idx_large,]/(30^2*pi) * 10
-ab_mr = ab_m/(30^2*pi) * 10
+ab_mr = ab_m
+ab_mr[idx_small,] = ab_m[idx_small,]/(13^2*pi) * 10
+ab_mr[idx_medium,] = ab_m[idx_medium,]/(20^2*pi) * 10
+ab_mr[idx_large,] = ab_m[idx_large,]/(30^2*pi) * 10
+# ab_mr = ab_m/(30^2*pi) * 10
 
 # melt measured
 ab_m_melt = melt(ab_mr)
@@ -474,9 +475,10 @@ dbh_sum = aggregate(dbh~year+plot, dbh_mean, sum, na.rm=TRUE)
 dbh_m_sum = aggregate(dbh~year+plot, dbh_m_melt, sum)
 
 ggplot() + 
-  geom_line(data=dbh_sum, aes(x=year, y=dbh, colour=factor(plot), group=factor(plot))) +
-  geom_line(data=dbh_m_sum, aes(x=year, y=dbh, colour=factor(plot), group=factor(plot))) + 
-  labs(title ='Sum of DBH Values for DBH and RW Obs', colour = 'Plot ID')
+  geom_line(data=dbh_sum, aes(x=year, y=dbh, colour = 'Model')) +
+  geom_line(data=dbh_m_sum, aes(x=year, y=dbh, colour = 'Empirical')) + 
+  labs(title ='Sum of DBH Values for DBH and RW Obs', colour = 'Plot ID') +
+  scale_color_manual(values = c('Model' = 'darkgreen', 'Empirical' = 'lightgreen'), name = '')
 ggsave(paste0('sites/', site, '/figures/sum_dbh_by_plot_', site,'.pdf'))
 
 ################ ABCXYZ
