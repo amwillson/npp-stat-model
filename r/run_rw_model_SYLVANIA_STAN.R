@@ -33,7 +33,8 @@ col_names = sapply(strsplit(colnames(out), '\\['), function(x) x[[1]])
 # Visualize measurement error
 hist(out[,which(col_names=="sig_d_obs")])
 # Take mean of measurement error columns
-sig_d_obs = mean(out[,which(col_names=="sig_d_obs")])
+sig_d_obs = 0.1
+#sig_d_obs = mean(out[,which(col_names=="sig_d_obs")])
 
 # Add to data (from RDS)
 dat$sig_d_obs = sig_d_obs

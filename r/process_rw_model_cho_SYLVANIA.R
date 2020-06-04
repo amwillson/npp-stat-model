@@ -29,7 +29,7 @@ library(dplyr)
 ########################################
 
 # date for save purposes
-date = '27May2020' 
+date = '3June2020' 
 
 # set up output 
 site <- 'SYLVANIA'
@@ -96,8 +96,7 @@ pdbh_year = dat$pdbh_year
 trees = seq(1, N_trees)
 
 # match species acronyms to level3a available species/pfts 
-acro_level3a = read.csv('data/acronym_to_level3a_v0.1.csv', stringsAsFactors = FALSE)
-acro_level3a[17,] = c('THOC', 'Cedar/juniper')
+acro_level3a = read.csv('data/acronym_to_level3a_v0.2.csv', stringsAsFactors = FALSE)
 acro_level3a = left_join(taxaMatch, acro_level3a, by = c('species'='acronym'))
 choj = read.csv('data/level3a_to_chojnacky_v0.4.csv', stringsAsFactors = FALSE)
 choj = left_join(acro_level3a, choj, id = 'level3a') 
