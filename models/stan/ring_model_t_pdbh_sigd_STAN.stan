@@ -21,22 +21,17 @@ parameters {
   real<lower=0> beta_sd;
   real beta_t[N_years];
   real<lower=0> beta_t_sd;
-  real<lower=0> sig_x;
-  real<lower=0> sig_x_obs;
+  real<lower=1e-6> sig_x;
+  real<lower=1e-6> sig_x_obs;
   //real<lower=0> sig_d_obs;
-  real<lower=0> D0[N_trees];
-  vector<lower=0>[N_vals] X;
-  //vector<lower=0, upper=400>[N_species] sigma;
-  //real<lower=0, upper=200> a;
-  
+  real<lower=1e-6, upper=80> D0[N_trees];
+  vector<lower=1e-6>[N_vals] X;
 }
 transformed parameters {
     // process evolution
-  vector<lower=0>[N_vals] D;
+  vector<lower=1e-6>[N_vals] D;
 
   for (tree in 1:N_trees){
-    //print(D0[tree]);
-    //print( D0[tree] + 2.0 * X[tree, year_idx[tree,1]] / 10.0);
     D[idx_tree[tree,1]] = D0[tree] + 2.0 * X[idx_tree[tree,1]] / 10.0;
     for (val in (idx_tree[tree,1]+1):(idx_tree[tree,2])){
       D[val] = D[val-1] + 2.0 * X[val] / 10.0;
@@ -45,18 +40,17 @@ transformed parameters {
 }
 
 model{
-  
+
   beta0     ~ normal(0, 1.0/0.00001);
-  sig_x_obs ~ uniform(0, 2.0);
+  sig_x_obs ~ uniform(1e-6, 2.0);
   sig_d_obs ~ uniform(1e-6, 1000);
   
   sig_x     ~ uniform(1e-6, 1000);
   beta_sd   ~ uniform(1e-6, 1000);
   beta_t_sd ~ uniform(1e-6, 1000);
-  
     
   for(tree in 1:N_trees) {
-    D0[tree] ~ uniform(0, 50);
+    D0[tree] ~ uniform(1e-6, 80);
     beta[tree] ~ normal(beta0, beta_sd);
   }
   
@@ -66,19 +60,22 @@ model{
   
   // increment likelihood
   for (val in 1:N_vals){
-    //for (year in year_idx[tree, 1]:year_idx[tree,2]){
      X[val] ~ lognormal(beta[x2tree[val]] + beta_t[x2year[val]], sig_x);
    }
    
   for (inc in 1:N_inc){
+   if (x2tree[meas2x[inc]] == 3) {
+   //print("inc=", inc, " logX=", log(X[meas2x[inc]]), " logXobs=", logXobs[inc], " D=", D[meas2x[inc]], " X=", X[meas2x[inc]], " idx=", meas2x[inc]);
+   }
    logXobs[inc] ~ normal(log(X[meas2x[inc]]), sig_x_obs);
   }
   
-  for (tree in 1:N_trees){ 
+  for (tree in 1:N_trees){
+    if(tree == 3) {
+    //print("tree=", tree, " logPDobs=", logPDobs[tree], " logD=", log(D[pdbh2val[tree]]), " D=", D[pdbh2val[tree]], " idx=", pdbh2val[tree]);
+    }
     if (logPDobs[tree] == -999){
-      //} else if () {
     } else {
-      //logPDobs[tree] ~ student_t(3, log(D[pdbh2val[tree]-1] + 2*X[pdbh2val[tree]]/10.0), sig_d_obs);
       logPDobs[tree] ~ student_t(3, log(D[pdbh2val[tree]]), sig_d_obs);
     }
   }
